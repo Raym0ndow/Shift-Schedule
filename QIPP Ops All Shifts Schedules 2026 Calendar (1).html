@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACWA Power - 2026 Shift Schedule</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: white;
+            border-bottom: 3px solid #1e3c72;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo-container img {
+            max-height: 80px;
+            width: auto;
+        }
+
+        .shift-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .shift-btn {
+            padding: 12px 28px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 2px solid #1e3c72;
+            background: white;
+            color: #1e3c72;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .shift-btn:hover {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .shift-btn.active {
+            background: #1e3c72;
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.4);
+        }
+
+        .calendar-container {
+            padding: 30px 20px;
+        }
+
+        .month-section {
+            margin-bottom: 40px;
+        }
+
+        .month-title {
+            text-align: center;
+            color: #1e3c72;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: 700;
+            color: #1e3c72;
+            padding: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 60px;
+        }
+
+        .calendar-day:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .calendar-day.empty {
+            background: #fafafa;
+            border: none;
+            cursor: default;
+        }
+
+        .calendar-day.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .calendar-day.day-shift {
+            background: #ffffff;
+            color: #333;
+            border: 2px solid #4caf50;
+        }
+
+        .calendar-day.night-shift {
+            background: #1a1a4d;
+            color: #ffffff;
+            border: 2px solid #0f0f33;
+        }
+
+        .calendar-day.off-shift {
+            background: #d32f2f;
+            color: #ffffff;
+            border: 2px solid #b71c1c;
+            font-weight: 700;
+        }
+
+        .calendar-day .date {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .calendar-day .shift {
+            font-size: 11px;
+            margin-top: 4px;
+            text-transform: capitalize;
+        }
+
+        .legend {
+            background: #f8f9fa;
+            padding: 25px 20px;
+            margin: 30px 20px 0 20px;
+            border-top: 2px solid #1e3c72;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .legend-color {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            border: 2px solid #999;
+        }
+
+        .legend-color.day {
+            background: #ffffff;
+            border: 2px solid #4caf50;
+        }
+
+        .legend-color.night {
+            background: #1a1a4d;
+        }
+
+        .legend-color.off {
+            background: #d32f2f;
+        }
+
+        .legend-text {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .legend-text strong {
+            color: #1e3c72;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        footer {
+            background: #1e3c72;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-grid {
+                gap: 4px;
+                padding: 10px;
+            }
+
+            .calendar-day {
+                min-height: 50px;
+                font-size: 11px;
+            }
+
+            .calendar-day .date {
+                font-size: 14px;
+            }
+
+            .shift-nav {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .shift-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <img src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/448fea5b-0f99-454a-8962-53bf2061825b" alt="ACWA Power Logo">
+            </div>
+        </header>
+
+        <div class="shift-nav">
+            <button class="shift-btn active" onclick="switchShift('A')">Shift A</button>
+            <button class="shift-btn" onclick="switchShift('B')">Shift B</button>
+            <button class="shift-btn" onclick="switchShift('C')">Shift C</button>
+            <button class="shift-btn" onclick="switchShift('D')">Shift D</button>
+        </div>
+
+        <div class="calendar-container" id="calendarContainer"></div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color day"></div>
+                <div class="legend-text"><strong>Day Shift</strong>Morning/Afternoon</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color night"></div>
+                <div class="legend-text"><strong>Night Shift</strong>Evening/Overnight</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color off"></div>
+                <div class="legend-text"><strong>Off Days</strong>Rest Days</div>
+            </div>
+        </div>
+
+        <footer>
+            <strong>ACWA Power - QIPP Operation Dept.</strong><br>
+            2026 Operation Shift Schedule
+        </footer>
+    </div>
+
+    <script>
+        const scheduleData = {
+            "1/1": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "1/2": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "1/3": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "1/4": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "1/5": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "1/6": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "1/7": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "1/8": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "1/9": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "1/10": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "1/11": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "1/12": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "1/13": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "1/14": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "1/15": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "1/16": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "1/17": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "1/18": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "1/19": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "1/20": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "1/21": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "1/22": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "1/23": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "1/24": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "1/25": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "1/26": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "1/27": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "1/28": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "1/29": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "1/30": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "1/31": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "2/1": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "2/2": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "2/3": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "2/4": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "2/5": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "2/6": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "2/7": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "2/8": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "2/9": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "2/10": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "2/11": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "2/12": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "2/13": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "2/14": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "2/15": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "2/16": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "2/17": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "2/18": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "2/19": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "2/20": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "2/21": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "2/22": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "2/23": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "2/24": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "2/25": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "2/26": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "2/27": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "2/28": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "3/1": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "3/2": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "3/3": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "3/4": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "3/5": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "3/6": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "3/7": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "3/8": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "3/9": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "3/10": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "3/11": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "3/12": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "3/13": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "3/14": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "3/15": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "3/16": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "3/17": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "3/18": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "3/19": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "3/20": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "3/21": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "3/22": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "3/23": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "3/24": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "3/25": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "3/26": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "3/27": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "3/28": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "3/29": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "3/30": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "3/31": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "4/1": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "4/2": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "4/3": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "4/4": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "4/5": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "4/6": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "4/7": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "4/8": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "4/9": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "4/10": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "4/11": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "4/12": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "4/13": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "4/14": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "4/15": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "4/16": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "4/17": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "4/18": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "4/19": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "4/20": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "4/21": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "4/22": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "4/23": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "4/24": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "4/25": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "4/26": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "4/27": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "4/28": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "4/29": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "4/30": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "5/1": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "5/2": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "5/3": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "5/4": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "5/5": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "5/6": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "5/7": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "5/8": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "5/9": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "5/10": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "5/11": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "5/12": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "5/13": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "5/14": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "5/15": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "5/16": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "5/17": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "5/18": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "5/19": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "5/20": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "5/21": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "5/22": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "5/23": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "5/24": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "5/25": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "5/26": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "5/27": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "5/28": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "5/29": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "5/30": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "5/31": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "6/1": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "6/2": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "6/3": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "6/4": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "6/5": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "6/6": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "6/7": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "6/8": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "6/9": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "6/10": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "6/11": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "6/12": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "6/13": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "6/14": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "6/15": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "6/16": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "6/17": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "6/18": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "6/19": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "6/20": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "6/21": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "6/22": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "6/23": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "6/24": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "6/25": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "6/26": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "6/27": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "6/28": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "6/29": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "6/30": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "7/1": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "7/2": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "7/3": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "7/4": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "7/5": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "7/6": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "7/7": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "7/8": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "7/9": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "7/10": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "7/11": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "7/12": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "7/13": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "7/14": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "7/15": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "7/16": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "7/17": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "7/18": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "7/19": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "7/20": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "7/21": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "7/22": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "7/23": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "7/24": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "7/25": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "7/26": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "7/27": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "7/28": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "7/29": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "7/30": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "7/31": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "8/1": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "8/2": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "8/3": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "8/4": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "8/5": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "8/6": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "8/7": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "8/8": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "8/9": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "8/10": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "8/11": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "8/12": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "8/13": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "8/14": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "8/15": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "8/16": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "8/17": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "8/18": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "8/19": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "8/20": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "8/21": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "8/22": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "8/23": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "8/24": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "8/25": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "8/26": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "8/27": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "8/28": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "8/29": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "8/30": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "8/31": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "9/1": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "9/2": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "9/3": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "9/4": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "9/5": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "9/6": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "9/7": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "9/8": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "9/9": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "9/10": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "9/11": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "9/12": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "9/13": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "9/14": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "9/15": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "9/16": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "9/17": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "9/18": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "9/19": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "9/20": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "9/21": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "9/22": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "9/23": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "9/24": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "9/25": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "9/26": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "9/27": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "9/28": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "9/29": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "9/30": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "10/1": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "10/2": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "10/3": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "10/4": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "10/5": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "10/6": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "10/7": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "10/8": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "10/9": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "10/10": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "10/11": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "10/12": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "10/13": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "10/14": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "10/15": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "10/16": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "10/17": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "10/18": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "10/19": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "10/20": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "10/21": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "10/22": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "10/23": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "10/24": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "10/25": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "10/26": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "10/27": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "10/28": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "10/29": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "10/30": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "10/31": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "11/1": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "11/2": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "11/3": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "11/4": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "11/5": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "11/6": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "11/7": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "11/8": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "11/9": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "11/10": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "11/11": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "11/12": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "11/13": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "11/14": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "11/15": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "11/16": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "11/17": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "11/18": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "11/19": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "11/20": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "11/21": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "11/22": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "11/23": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "11/24": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "11/25": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "11/26": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "11/27": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "11/28": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "11/29": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "11/30": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "12/1": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "12/2": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "12/3": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "12/4": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "12/5": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "12/6": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "12/7": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "12/8": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "12/9": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "12/10": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "12/11": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "12/12": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "12/13": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "12/14": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "12/15": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "12/16": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "12/17": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "12/18": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "12/19": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "12/20": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "12/21": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "12/22": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "12/23": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "12/24": {"A": "O", "B": "O", "C": "D", "D": "N"},
+            "12/25": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "12/26": {"A": "D", "B": "O", "C": "N", "D": "O"},
+            "12/27": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "12/28": {"A": "N", "B": "D", "C": "O", "D": "O"},
+            "12/29": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "12/30": {"A": "O", "B": "N", "C": "O", "D": "D"},
+            "12/31": {"A": "O", "B": "O", "C": "D", "D": "N"}
+        };
+
+        function getDayClass(date, shift) {
+            const key = `${date.getMonth() + 1}/${date.getDate()}`;
+            const data = scheduleData[key];
+            if (!data) return "empty";
+            const type = data[shift];
+            if (type === "D") return "day-shift";
+            if (type === "N") return "night-shift";
+            if (type === "O") return "off-shift";
+            return "empty";
+        }
+
+        function getShiftLabel(date, shift) {
+            const key = `${date.getMonth() + 1}/${date.getDate()}`;
+            const data = scheduleData[key];
+            if (!data) return "";
+            const type = data[shift];
+            if (type === "D") return "day";
+            if (type === "N") return "night";
+            if (type === "O") return "off";
+            return "";
+        }
+
+        function buildCalendar(shift) {
+            const container = document.getElementById('calendarContainer');
+            container.innerHTML = '';
+
+            for (let month = 0; month < 12; month++) {
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                
+                const monthSection = document.createElement('div');
+                monthSection.className = 'month-section';
+                
+                const title = document.createElement('div');
+                title.className = 'month-title';
+                title.textContent = `${monthNames[month]} 2026`;
+                monthSection.appendChild(title);
+                
+                const grid = document.createElement('div');
+                grid.className = 'calendar-grid';
+                
+                dayNames.forEach(day => {
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'day-header';
+                    dayHeader.textContent = day;
+                    grid.appendChild(dayHeader);
+                });
+                
+                const firstDay = new Date(2026, month, 1).getDay();
+                const daysInMonth = new Date(2026, month + 1, 0).getDate();
+                
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyDay = document.createElement('div');
+                    emptyDay.className = 'calendar-day empty';
+                    grid.appendChild(emptyDay);
+                }
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(2026, month, day);
+                    const dayClass = getDayClass(date, shift);
+                    const label = getShiftLabel(date, shift);
+                    
+                    const dayElement = document.createElement('div');
+                    dayElement.className = `calendar-day ${dayClass}`;
+                    dayElement.innerHTML = `<div class="date">${day}</div><div class="shift">${label}</div>`;
+                    grid.appendChild(dayElement);
+                }
+                
+                monthSection.appendChild(grid);
+                container.appendChild(monthSection);
+            }
+        }
+
+        function switchShift(shift) {
+            const buttons = document.querySelectorAll('.shift-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            buildCalendar(shift);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => buildCalendar('A'));
+    </script>
+</body>
+</html>
